@@ -4,10 +4,11 @@ import Home from "@/components/PagesComponent/Home/Home";
 
 export const dynamic = "force-dynamic";
 
+// Generate SEO metadata
 export const generateMetadata = async ({ searchParams }) => {
   const langCode = (await searchParams)?.lang || "en";
   try {
-    const url = `${process.env.NEXT_PUBLIC_API_URL}${process.env.NEXT_PUBLIC_END_POINT}seo-settings?page=home`;
+    const url = `${process.env.NEXT_PUBLIC_API_URL}${process.env.NEXT_PUBLIC_END_POINT}/seo-settings?page=home`;
     console.log("MetaData fetch URL:", url);
 
     const res = await fetch(url, {
@@ -30,52 +31,46 @@ export const generateMetadata = async ({ searchParams }) => {
   }
 };
 
+// Fetch categories
 const fetchCategories = async (langCode) => {
   try {
-    const url = `${process.env.NEXT_PUBLIC_API_URL}${process.env.NEXT_PUBLIC_END_POINT}get-categories?page=1`;
-    console.log("Categories fetch URL:", url);
-
+    const url = `${process.env.NEXT_PUBLIC_API_URL}${process.env.NEXT_PUBLIC_END_POINT}/get-categories?page=1`;
     const res = await fetch(url, {
       cache: "no-store",
-      headers: { "Content-Language": langCode || "en" },
+      headers: { "Content-Language": langCode },
     });
-
     const data = await res.json();
-    return data?.data || [];
+    return data?.data?.data || [];
   } catch (error) {
     console.error("Error fetching Categories Data:", error);
     return [];
   }
 };
 
+// Fetch products
 const fetchProductItems = async (langCode) => {
   try {
-    const url = `${process.env.NEXT_PUBLIC_API_URL}${process.env.NEXT_PUBLIC_END_POINT}get-item?page=1`;
-    console.log("Products fetch URL:", url);
-
+    const url = `${process.env.NEXT_PUBLIC_API_URL}${process.env.NEXT_PUBLIC_END_POINT}/get-item?page=1`;
     const res = await fetch(url, {
       cache: "no-store",
-      headers: { "Content-Language": langCode || "en" },
+      headers: { "Content-Language": langCode },
     });
-
     const data = await res.json();
-    return data?.data || [];
+    return data?.data?.data || [];
   } catch (error) {
     console.error("Error fetching Product Items Data:", error);
     return [];
   }
 };
 
+// Fetch featured sections
 const fetchFeaturedSections = async (langCode) => {
   try {
-    const url = `${process.env.NEXT_PUBLIC_API_URL}${process.env.NEXT_PUBLIC_END_POINT}get-featured-section`;
-    console.log("Featured Sections fetch URL:", url);
-
+    const url = `${process.env.NEXT_PUBLIC_API_URL}${process.env.NEXT_PUBLIC_END_POINT}/get-featured-section`;
     const res = await fetch(url, {
       cache: "no-store",
-      headers: { "Content-Language": langCode || "en" },
+      headers: { "Content-Language": langCode },
     });
-
     const data = await res.json();
     return data?.data || [];
   } catch (error) {
@@ -84,9 +79,11 @@ const fetchFeaturedSections = async (langCode) => {
   }
 };
 
+// Home page
 export default async function HomePage({ searchParams }) {
   const langCode = (await searchParams)?.lang || "en";
 
+  // Fetch all data in parallel
   const [categoriesData, productItemsData, featuredSectionsData] = await Promise.all([
     fetchCategories(langCode),
     fetchProductItems(langCode),
@@ -97,6 +94,7 @@ export default async function HomePage({ searchParams }) {
   console.log("Products:", productItemsData);
   console.log("Featured Sections:", featuredSectionsData);
 
+  // Deduplicate featured items
   const existingSlugs = new Set(productItemsData.map((product) => product.slug));
   let featuredItems = [];
   featuredSectionsData.forEach((section) => {
@@ -108,6 +106,7 @@ export default async function HomePage({ searchParams }) {
     });
   });
 
+  // JSON-LD structured data
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "ItemList",
