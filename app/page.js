@@ -4,9 +4,12 @@ import Home from "@/components/PagesComponent/Home/Home";
 
 export const dynamic = "force-dynamic";
 
-// Generate SEO metadata
+// ============================
+// Generate SEO Metadata
+// ============================
 export const generateMetadata = async ({ searchParams }) => {
   const langCode = (await searchParams)?.lang || "en";
+
   try {
     const url = `${process.env.NEXT_PUBLIC_API_URL}${process.env.NEXT_PUBLIC_END_POINT}/seo-settings?page=home`;
     console.log("MetaData fetch URL:", url);
@@ -31,7 +34,9 @@ export const generateMetadata = async ({ searchParams }) => {
   }
 };
 
-// Fetch categories
+// ============================
+// Fetch Categories
+// ============================
 const fetchCategories = async (langCode) => {
   try {
     const url = `${process.env.NEXT_PUBLIC_API_URL}${process.env.NEXT_PUBLIC_END_POINT}/get-categories?page=1`;
@@ -39,6 +44,7 @@ const fetchCategories = async (langCode) => {
       cache: "no-store",
       headers: { "Content-Language": langCode },
     });
+
     const data = await res.json();
     return data?.data?.data || [];
   } catch (error) {
@@ -47,7 +53,9 @@ const fetchCategories = async (langCode) => {
   }
 };
 
-// Fetch products
+// ============================
+// Fetch Product Items
+// ============================
 const fetchProductItems = async (langCode) => {
   try {
     const url = `${process.env.NEXT_PUBLIC_API_URL}${process.env.NEXT_PUBLIC_END_POINT}/get-item?page=1`;
@@ -55,6 +63,7 @@ const fetchProductItems = async (langCode) => {
       cache: "no-store",
       headers: { "Content-Language": langCode },
     });
+
     const data = await res.json();
     return data?.data?.data || [];
   } catch (error) {
@@ -63,7 +72,9 @@ const fetchProductItems = async (langCode) => {
   }
 };
 
-// Fetch featured sections
+// ============================
+// Fetch Featured Sections
+// ============================
 const fetchFeaturedSections = async (langCode) => {
   try {
     const url = `${process.env.NEXT_PUBLIC_API_URL}${process.env.NEXT_PUBLIC_END_POINT}/get-featured-section`;
@@ -71,15 +82,18 @@ const fetchFeaturedSections = async (langCode) => {
       cache: "no-store",
       headers: { "Content-Language": langCode },
     });
+
     const data = await res.json();
     return data?.data || [];
   } catch (error) {
-    console.error("Error fetching Featured sections Data:", error);
+    console.error("Error fetching Featured Sections Data:", error);
     return [];
   }
 };
 
-// Home page
+// ============================
+// Home Page
+// ============================
 export default async function HomePage({ searchParams }) {
   const langCode = (await searchParams)?.lang || "en";
 
@@ -96,7 +110,8 @@ export default async function HomePage({ searchParams }) {
 
   // Deduplicate featured items
   const existingSlugs = new Set(productItemsData.map((product) => product.slug));
-  let featuredItems = [];
+  const featuredItems = [];
+
   featuredSectionsData.forEach((section) => {
     (section.section_data || []).slice(0, 4).forEach((item) => {
       if (!existingSlugs.has(item.slug)) {
@@ -106,7 +121,7 @@ export default async function HomePage({ searchParams }) {
     });
   });
 
-  // JSON-LD structured data
+  // JSON-LD Structured Data
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "ItemList",
