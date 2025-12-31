@@ -9,14 +9,20 @@ export const dynamic = "force-dynamic";
 // ============================
 export const generateMetadata = async ({ searchParams }) => {
   const langCode = (await searchParams)?.lang || "en";
+
   try {
     const url = `${process.env.NEXT_PUBLIC_API_URL}${process.env.NEXT_PUBLIC_END_POINT}/seo-settings?page=home`;
+    console.log("MetaData fetch URL:", url);
+
     const res = await fetch(url, {
       cache: "no-store",
       headers: { "Content-Language": langCode },
     });
+
+    if (!res.ok) throw new Error(`Failed to fetch SEO metadata: HTTP ${res.status}`);
     const data = await res.json();
     const home = data?.data?.[0];
+
     return {
       title: home?.translated_title || process.env.NEXT_PUBLIC_META_TITLE,
       description: home?.translated_description || process.env.NEXT_PUBLIC_META_DESCRIPTION,
@@ -39,7 +45,10 @@ const fetchCategories = async (langCode) => {
       cache: "no-store",
       headers: { "Content-Language": langCode },
     });
+
+    if (!res.ok) throw new Error(`Failed to fetch categories: HTTP ${res.status}`);
     const data = await res.json();
+
     return data?.data?.data || [];
   } catch (error) {
     console.error("Error fetching Categories Data:", error);
@@ -57,7 +66,10 @@ const fetchProductItems = async (langCode) => {
       cache: "no-store",
       headers: { "Content-Language": langCode },
     });
+
+    if (!res.ok) throw new Error(`Failed to fetch product items: HTTP ${res.status}`);
     const data = await res.json();
+
     return data?.data?.data || [];
   } catch (error) {
     console.error("Error fetching Product Items Data:", error);
@@ -75,7 +87,10 @@ const fetchFeaturedSections = async (langCode) => {
       cache: "no-store",
       headers: { "Content-Language": langCode },
     });
+
+    if (!res.ok) throw new Error(`Failed to fetch featured sections: HTTP ${res.status}`);
     const data = await res.json();
+
     return data?.data || [];
   } catch (error) {
     console.error("Error fetching Featured Sections Data:", error);
