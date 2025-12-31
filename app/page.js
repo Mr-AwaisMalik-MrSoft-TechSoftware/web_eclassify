@@ -7,24 +7,21 @@ export const dynamic = "force-dynamic";
 export const generateMetadata = async ({ searchParams }) => {
   const langCode = (await searchParams)?.lang || "en";
   try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}${process.env.NEXT_PUBLIC_END_POINT}seo-settings?page=home`,
-      {
-        headers: {
-          "Content-Language": langCode,
-        },
-      }
-    );
+    const url = `${process.env.NEXT_PUBLIC_API_URL}${process.env.NEXT_PUBLIC_END_POINT}seo-settings?page=home`;
+    console.log("MetaData fetch URL:", url);
+
+    const res = await fetch(url, {
+      cache: "no-store",
+      headers: { "Content-Language": langCode },
+    });
+
     const data = await res.json();
     const home = data?.data?.[0];
 
     return {
       title: home?.translated_title || process.env.NEXT_PUBLIC_META_TITLE,
-      description:
-        home?.translated_description || process.env.NEXT_PUBLIC_META_DESCRIPTION,
-      openGraph: {
-        images: home?.image ? [home?.image] : [],
-      },
+      description: home?.translated_description || process.env.NEXT_PUBLIC_META_DESCRIPTION,
+      openGraph: { images: home?.image ? [home?.image] : [] },
       keywords: home?.translated_keywords || process.env.NEXT_PUBLIC_META_kEYWORDS,
     };
   } catch (error) {
@@ -35,14 +32,14 @@ export const generateMetadata = async ({ searchParams }) => {
 
 const fetchCategories = async (langCode) => {
   try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}${process.env.NEXT_PUBLIC_END_POINT}get-categories?page=1`,
-      {
-        headers: {
-          "Content-Language": langCode || "en",
-        },
-      }
-    );
+    const url = `${process.env.NEXT_PUBLIC_API_URL}${process.env.NEXT_PUBLIC_END_POINT}get-categories?page=1`;
+    console.log("Categories fetch URL:", url);
+
+    const res = await fetch(url, {
+      cache: "no-store",
+      headers: { "Content-Language": langCode || "en" },
+    });
+
     const data = await res.json();
     return data?.data || [];
   } catch (error) {
@@ -53,14 +50,14 @@ const fetchCategories = async (langCode) => {
 
 const fetchProductItems = async (langCode) => {
   try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}${process.env.NEXT_PUBLIC_END_POINT}get-item?page=1`,
-      {
-        headers: {
-          "Content-Language": langCode || "en",
-        },
-      }
-    );
+    const url = `${process.env.NEXT_PUBLIC_API_URL}${process.env.NEXT_PUBLIC_END_POINT}get-item?page=1`;
+    console.log("Products fetch URL:", url);
+
+    const res = await fetch(url, {
+      cache: "no-store",
+      headers: { "Content-Language": langCode || "en" },
+    });
+
     const data = await res.json();
     return data?.data || [];
   } catch (error) {
@@ -71,14 +68,14 @@ const fetchProductItems = async (langCode) => {
 
 const fetchFeaturedSections = async (langCode) => {
   try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}${process.env.NEXT_PUBLIC_END_POINT}get-featured-section`,
-      {
-        headers: {
-          "Content-Language": langCode || "en",
-        },
-      }
-    );
+    const url = `${process.env.NEXT_PUBLIC_API_URL}${process.env.NEXT_PUBLIC_END_POINT}get-featured-section`;
+    console.log("Featured Sections fetch URL:", url);
+
+    const res = await fetch(url, {
+      cache: "no-store",
+      headers: { "Content-Language": langCode || "en" },
+    });
+
     const data = await res.json();
     return data?.data || [];
   } catch (error) {
@@ -90,20 +87,16 @@ const fetchFeaturedSections = async (langCode) => {
 export default async function HomePage({ searchParams }) {
   const langCode = (await searchParams)?.lang || "en";
 
-  // Fetch all data
-  const [categoriesData, productItemsData, featuredSectionsData] =
-    await Promise.all([
-      fetchCategories(langCode),
-      fetchProductItems(langCode),
-      fetchFeaturedSections(langCode),
-    ]);
+  const [categoriesData, productItemsData, featuredSectionsData] = await Promise.all([
+    fetchCategories(langCode),
+    fetchProductItems(langCode),
+    fetchFeaturedSections(langCode),
+  ]);
 
-  // Console logs for debugging
   console.log("Categories:", categoriesData);
   console.log("Products:", productItemsData);
   console.log("Featured Sections:", featuredSectionsData);
 
-  // Featured items deduplication
   const existingSlugs = new Set(productItemsData.map((product) => product.slug));
   let featuredItems = [];
   featuredSectionsData.forEach((section) => {
@@ -115,7 +108,6 @@ export default async function HomePage({ searchParams }) {
     });
   });
 
-  // JSON-LD structured data
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "ItemList",
@@ -140,13 +132,7 @@ export default async function HomePage({ searchParams }) {
           image: product?.image,
           url: `${process.env.NEXT_PUBLIC_WEB_URL}/ad-details/${product?.slug}`,
           category: product?.category?.translated_name,
-          ...(product?.price && {
-            offers: {
-              "@type": "Offer",
-              price: product?.price,
-              priceCurrency: "USD",
-            },
-          }),
+          ...(product?.price && { offers: { "@type": "Offer", price: product?.price, priceCurrency: "USD" } }),
           countryOfOrigin: product?.translated_item?.country,
         },
       })),
@@ -161,13 +147,7 @@ export default async function HomePage({ searchParams }) {
           image: item?.image,
           url: `${process.env.NEXT_PUBLIC_WEB_URL}/ad-details/${item?.slug}`,
           category: item?.category?.translated_name,
-          ...(item?.price && {
-            offers: {
-              "@type": "Offer",
-              price: item?.price,
-              priceCurrency: "USD",
-            },
-          }),
+          ...(item?.price && { offers: { "@type": "Offer", price: item?.price, priceCurrency: "USD" } }),
           countryOfOrigin: item?.translated_item?.country,
         },
       })),
