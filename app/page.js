@@ -9,19 +9,14 @@ export const dynamic = "force-dynamic";
 // ============================
 export const generateMetadata = async ({ searchParams }) => {
   const langCode = (await searchParams)?.lang || "en";
-
   try {
     const url = `${process.env.NEXT_PUBLIC_API_URL}${process.env.NEXT_PUBLIC_END_POINT}/seo-settings?page=home`;
-    console.log("MetaData fetch URL:", url);
-
     const res = await fetch(url, {
       cache: "no-store",
       headers: { "Content-Language": langCode },
     });
-
     const data = await res.json();
     const home = data?.data?.[0];
-
     return {
       title: home?.translated_title || process.env.NEXT_PUBLIC_META_TITLE,
       description: home?.translated_description || process.env.NEXT_PUBLIC_META_DESCRIPTION,
@@ -44,7 +39,6 @@ const fetchCategories = async (langCode) => {
       cache: "no-store",
       headers: { "Content-Language": langCode },
     });
-
     const data = await res.json();
     return data?.data?.data || [];
   } catch (error) {
@@ -63,7 +57,6 @@ const fetchProductItems = async (langCode) => {
       cache: "no-store",
       headers: { "Content-Language": langCode },
     });
-
     const data = await res.json();
     return data?.data?.data || [];
   } catch (error) {
@@ -82,7 +75,6 @@ const fetchFeaturedSections = async (langCode) => {
       cache: "no-store",
       headers: { "Content-Language": langCode },
     });
-
     const data = await res.json();
     return data?.data || [];
   } catch (error) {
@@ -92,7 +84,7 @@ const fetchFeaturedSections = async (langCode) => {
 };
 
 // ============================
-// Home Page
+// Home Page Component
 // ============================
 export default async function HomePage({ searchParams }) {
   const langCode = (await searchParams)?.lang || "en";
@@ -104,14 +96,9 @@ export default async function HomePage({ searchParams }) {
     fetchFeaturedSections(langCode),
   ]);
 
-  console.log("Categories:", categoriesData);
-  console.log("Products:", productItemsData);
-  console.log("Featured Sections:", featuredSectionsData);
-
   // Deduplicate featured items
   const existingSlugs = new Set(productItemsData.map((product) => product.slug));
   const featuredItems = [];
-
   featuredSectionsData.forEach((section) => {
     (section.section_data || []).slice(0, 4).forEach((item) => {
       if (!existingSlugs.has(item.slug)) {
